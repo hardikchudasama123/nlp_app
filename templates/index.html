@@ -118,6 +118,7 @@
             gap: 1rem;
             align-items: center;
             margin-bottom: 1.5rem;
+            flex-wrap: wrap;
         }
 
         .btn {
@@ -152,6 +153,14 @@
             border: 2px solid #e9ecef;
             border-radius: 5px;
             font-size: 1rem;
+        }
+
+        .number-input {
+            padding: 0.5rem;
+            border: 2px solid #e9ecef;
+            border-radius: 5px;
+            font-size: 1rem;
+            width: 80px;
         }
 
         .result-section {
@@ -271,6 +280,22 @@
             font-size: 0.875rem;
             color: #6c757d;
         }
+
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .slider {
+            width: 100px;
+        }
     </style>
 </head>
 <body>
@@ -279,6 +304,8 @@
         <div class="nav-tabs">
             <button class="nav-tab active" onclick="showFeature('summarize')">Summarize</button>
             <button class="nav-tab" onclick="showFeature('sentiment')">Sentiment</button>
+            <button class="nav-tab" onclick="showFeature('generate')">Generate</button>
+            <button class="nav-tab" onclick="showFeature('translate')">Translate</button>
             <button class="nav-tab" onclick="showFeature('chat')">Assistant</button>
         </div>
     </div>
@@ -293,12 +320,14 @@
             </div>
             <div class="controls">
                 <button class="btn btn-primary" onclick="summarizeText()">Summarize</button>
-                <label>Max sentences:</label>
-                <select id="max-sentences" class="select-input">
-                    <option value="2">2</option>
-                    <option value="3" selected>3</option>
-                    <option value="5">5</option>
-                </select>
+                <div class="control-group">
+                    <label>Max sentences:</label>
+                    <select id="max-sentences" class="select-input">
+                        <option value="2">2</option>
+                        <option value="3" selected>3</option>
+                        <option value="5">5</option>
+                    </select>
+                </div>
                 <button class="btn btn-secondary" onclick="clearText('summarize-input')">Clear</button>
             </div>
             <div id="summarize-result" class="result-section" style="display: none;">
@@ -334,8 +363,72 @@
             </div>
         </div>
 
+        <!-- Text Generation -->
+        <div id="generate" class="feature-section">
+            <h2 class="feature-title">AI Text Generation</h2>
+            <div class="input-group">
+                <label class="input-label">Enter a prompt to generate text:</label>
+                <textarea id="generate-input" class="text-input" placeholder="Enter a prompt like 'Once upon a time...' or 'The future of technology is...'"></textarea>
+            </div>
+            <div class="controls">
+                <button class="btn btn-primary" onclick="generateText()">Generate Text</button>
+                <div class="control-group">
+                    <label>Max length:</label>
+                    <input type="number" id="max-length" class="number-input" value="100" min="50" max="500">
+                </div>
+                <div class="slider-container">
+                    <label>Creativity:</label>
+                    <input type="range" id="temperature" class="slider" min="0.1" max="1.0" step="0.1" value="0.7">
+                    <span id="temperature-display">0.7</span>
+                </div>
+                <button class="btn btn-secondary" onclick="clearText('generate-input')">Clear</button>
+            </div>
+            <div id="generate-result" class="result-section" style="display: none;">
+                <h3 class="result-title">Generated Text:</h3>
+                <div id="generate-content" class="result-content"></div>
+            </div>
+        </div>
 
-       
+        <!-- Translation -->
+        <div id="translate" class="feature-section">
+            <h2 class="feature-title">Language Translation</h2>
+            <div class="input-group">
+                <label class="input-label">Enter text to translate (English):</label>
+                <textarea id="translate-input" class="text-input" placeholder="Enter English text to translate to other languages"></textarea>
+            </div>
+            <div class="controls">
+                <button class="btn btn-primary" onclick="translateText()">Translate</button>
+                <div class="control-group">
+                    <label>Target Language:</label>
+                    <select id="target-language" class="select-input">
+                        <option value="es">Spanish (Español)</option>
+                        <option value="fr">French (Français)</option>
+                        <option value="de">German (Deutsch)</option>
+                        <option value="it">Italian (Italiano)</option>
+                        <option value="pt">Portuguese (Português)</option>
+                    </select>
+                </div>
+                <button class="btn btn-secondary" onclick="clearText('translate-input')">Clear</button>
+            </div>
+            <div id="translate-result" class="result-section" style="display: none;">
+                <h3 class="result-title">Translation Result:</h3>
+                <div class="stats">
+                    <div class="stat-item">
+                        <div id="source-lang" class="stat-value">EN</div>
+                        <div class="stat-label">From</div>
+                    </div>
+                    <div class="stat-item">
+                        <div style="font-size: 1.5rem; color: #28a745;">→</div>
+                        <div class="stat-label">To</div>
+                    </div>
+                    <div class="stat-item">
+                        <div id="target-lang" class="stat-value">ES</div>
+                        <div class="stat-label">Language</div>
+                    </div>
+                </div>
+                <div id="translate-content" class="result-content"></div>
+            </div>
+        </div>
 
 
         <!-- Chat with AI -->
@@ -344,7 +437,7 @@
             <div class="chat-container">
                 <div id="chat-messages" class="chat-messages">
                     <div class="chat-message bot">
-                        Hello! I'm your AI assistant. How can I help you today?
+                        Hello! I'm your AI assistant. I can help you with text summarization, sentiment analysis, text generation, and answer your questions. How can I help you today?
                     </div>
                 </div>
                 <div class="chat-input-container">
@@ -376,7 +469,15 @@
 
         function clearText(inputId) {
             document.getElementById(inputId).value = '';
+            if (inputId === 'generate-input') {
+                document.getElementById('generate-result').style.display = 'none';
+            }
         }
+
+        // Update temperature display when slider changes
+        document.getElementById('temperature').addEventListener('input', function() {
+            document.getElementById('temperature-display').textContent = this.value;
+        });
 
         async function summarizeText() {
             const text = document.getElementById('summarize-input').value;
@@ -452,23 +553,101 @@
             }
         }
 
-      
-  
+        async function generateText() {
+            const prompt = document.getElementById('generate-input').value;
+            const maxLength = document.getElementById('max-length').value;
+            const temperature = document.getElementById('temperature').value;
+            
+            if (!prompt.trim()) {
+                alert('Please enter a prompt to generate text');
+                return;
+            }
 
-function clearText(id) {
-  document.getElementById(id).value = '';
-  if (id === 'generate-input') {
-    document.getElementById('generate-result').style.display = 'none';
-    document.getElementById('generate-content').innerText = '';
-  }
-}
+            const button = event.target;
+            button.textContent = 'Generating...';
+            button.disabled = true;
 
+            try {
+                const response = await fetch('/api/generate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        prompt: prompt,
+                        max_length: parseInt(maxLength),
+                        temperature: parseFloat(temperature)
+                    })
+                });
+
+                const data = await response.json();
+                document.getElementById('generate-content').textContent = data.generated_text;
+                document.getElementById('generate-result').style.display = 'block';
+            } catch (error) {
+                alert('Error generating text: ' + error.message);
+            } finally {
+                button.textContent = 'Generate Text';
+                button.disabled = false;
+            }
+        }
 
         function handleChatKeyPress(event) {
             if (event.key === 'Enter') {
                 sendMessage();
             }
         }
+
+        async function translateText() {
+            const text = document.getElementById('translate-input').value;
+            const targetLang = document.getElementById('target-language').value;
+            
+            if (!text.trim()) {
+                alert('Please enter some text to translate');
+                return;
+            }
+
+            const button = event.target;
+            button.textContent = 'Translating...';
+            button.disabled = true;
+
+            try {
+                const response = await fetch('/api/translate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        text: text,
+                        target_lang: targetLang
+                    })
+                });
+
+                const data = await response.json();
+                
+                // Update language indicators
+                document.getElementById('source-lang').textContent = data.source_lang.toUpperCase();
+                document.getElementById('target-lang').textContent = data.target_lang.toUpperCase();
+                
+                // Show translated text
+                document.getElementById('translate-content').textContent = data.translated_text;
+                document.getElementById('translate-result').style.display = 'block';
+                
+            } catch (error) {
+                alert('Error translating text: ' + error.message);
+            } finally {
+                button.textContent = 'Translate';
+                button.disabled = false;
+            }
+        }
+
+// Update the clearText function to handle translate section
+function clearText(inputId) {
+    document.getElementById(inputId).value = '';
+    if (inputId === 'translate-input') {
+        document.getElementById('translate-result').style.display = 'none';
+    }
+    // ... your existing clear logic for other sections
+}
 
         async function sendMessage() {
             const input = document.getElementById('chat-input');
